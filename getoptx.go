@@ -42,6 +42,17 @@ type Config interface {
 	visit(p *parserWrapper)
 }
 
+// MustNewParser is like NewParser but print an error on stderr
+// and calls os.Exit(1) if NewParser fails.
+func MustNewParser(flags interface{}, configs ...Config) Parser {
+	parser, err := NewParser(flags, configs...)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %s\n", err.Error())
+		os.Exit(1)
+	}
+	return parser
+}
+
 // NewParser creates a new parser that stores the parsed options into the
 // given `flags` opaque argument. Use `config...` to adjust the parser's behavior.
 //
