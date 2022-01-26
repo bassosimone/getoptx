@@ -200,7 +200,7 @@ func (p *parserWrapper) Getopt(args []string) error {
 
 func (p *parserWrapper) MustGetopt(args []string) {
 	if err := p.Getopt(args); err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s", err.Error())
+		fmt.Fprintf(os.Stderr, "error: %s\n", err.Error())
 		p.PrintUsage(os.Stderr)
 		os.Exit(1)
 	}
