@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"os"
 	"reflect"
 	"strings"
 	"unicode/utf8"
@@ -21,6 +22,9 @@ type Parser interface {
 	// Getopt parses the command line options in args, which in the
 	// common case should be just os.Args.
 	Getopt(args []string) error
+
+	// MustGetopt is like Getopt but prints usage and exits on error.
+	MustGetopt(args []string)
 
 	// PrintUsage prints a detailed usage string on the given writer.
 	PrintUsage(w io.Writer)
@@ -181,6 +185,14 @@ func (p *parserWrapper) Getopt(args []string) error {
 		return errors.New("too many positional arguments")
 	}
 	return nil
+}
+
+func (p *parserWrapper) MustGetopt(args []string) {
+	if err := p.Getopt(args); err != nil {
+		fmt.Fprintf(os.Stderr, "error: %s", err.Error())
+		p.PrintUsage(os.Stderr)
+		os.Exit(1)
+	}
 }
 
 func (p *parserWrapper) PrintUsage(w io.Writer) {
