@@ -235,7 +235,7 @@ func (p *parserWrapper) PrintUsage(w io.Writer) {
 
 func (p *parserWrapper) printBriefUsage(w io.Writer) {
 	var parameters string
-	if p.maxArgs > 1 {
+	if p.maxArgs >= 1 {
 		parameters = p.Set.Parameters()
 	}
 	fmt.Fprintf(w, "\nUsage: %s [options] %s\n", p.Set.Program(), parameters)
