@@ -145,6 +145,10 @@ func NewParser(flags interface{}, configs ...Config) (Parser, error) {
 			return nil, errors.New("a field inside the structure is private")
 		}
 		opt := parser.FlagLong(fieldValuePtr.Interface(), name, short, docstring)
+		switch fieldValuePtr.Interface().(type) {
+		case *Counter:
+			opt.SetFlag()
+		}
 		// 8. an option could be marked as required.
 		if tag.Get("required") == "true" {
 			required[name] = true
