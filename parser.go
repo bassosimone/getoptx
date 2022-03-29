@@ -294,11 +294,11 @@ func (p *parserWrapper) MustGetopt(args []string) {
 func (p *parserWrapper) PrintUsage(w io.Writer) {
 	p.printBriefUsage(w)
 	fmt.Fprintf(w, "\n")
+	fmt.Fprintf(w, "Options:\n\n")
 	p.printOptions(w)
 }
 
 func (p *parserWrapper) printOptions(w io.Writer) {
-	fmt.Fprintf(w, "Options:\n\n")
 	p.set.VisitAll(func(o getopt.Option) {
 		if o.ShortName() != "" {
 			fmt.Fprintf(w, "  -%s, --%s", o.ShortName(), o.LongName())
