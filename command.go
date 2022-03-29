@@ -317,7 +317,8 @@ func (p *CommandParser) getoptall(chain []*CommandParser, args []string) (*Selec
 	// command with the positional arguments.
 	if len(p.subcommands) <= 0 {
 		if err := p.pac.check(parser); err != nil {
-			return nil, fmt.Errorf("%s: for command %s: %w", cmd, p.name, err)
+			fmt.Fprintf(os.Stderr, "%s: for command %s: %s\n", cmd, p.name, err.Error())
+			return nil, err
 		}
 		return p.newSelectedCommand(parser.Args()), nil
 	}
