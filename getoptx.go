@@ -157,7 +157,7 @@ func NewParser(flags interface{}, configs ...Config) (Parser, error) {
 	}
 	// 9. wrap pborman's parser.
 	pw := &parserWrapper{
-		Set:      parser,
+		set:      parser,
 		docs:     docs,
 		minArgs:  -1,          // allow any number of positional arguments
 		maxArgs:  math.MaxInt, // ditto
@@ -173,7 +173,7 @@ func NewParser(flags interface{}, configs ...Config) (Parser, error) {
 // parserWrapper wraps a getopt.Set to implement extra functionality.
 type parserWrapper struct {
 	// Set is the underlying cmdline parser.
-	*getopt.Set
+	set *getopt.Set
 
 	// docs contains the documentation.
 	docs map[string]string
@@ -188,11 +188,19 @@ type parserWrapper struct {
 	required map[string]bool
 }
 
+func (p *parserWrapper) Args() []string {
+	return p.set.Args()
+}
+
+func (p *parserWrapper) NArgs() int {
+	return p.set.NArgs()
+}
+
 func (p *parserWrapper) Getopt(args []string) error {
-	if err := p.Set.Getopt(args, nil); err != nil {
+	if err := p.set.Getopt(args, nil); err != nil {
 		return err
 	}
-	count := len(p.Set.Args())
+	count := len(p.set.Args())
 	if count < p.minArgs {
 		return errors.New("too few positional arguments")
 	}
@@ -213,7 +221,7 @@ func (p *parserWrapper) MustGetopt(args []string) {
 func (p *parserWrapper) PrintUsage(w io.Writer) {
 	p.printBriefUsage(w)
 	fmt.Fprintf(w, "\nOptions:\n")
-	p.Set.VisitAll(func(o getopt.Option) {
+	p.set.VisitAll(func(o getopt.Option) {
 		if o.ShortName() != "" {
 			fmt.Fprintf(w, "  -%s, --%s", o.ShortName(), o.LongName())
 		} else {
@@ -240,9 +248,9 @@ func (p *parserWrapper) PrintUsage(w io.Writer) {
 func (p *parserWrapper) printBriefUsage(w io.Writer) {
 	var parameters string
 	if p.maxArgs >= 1 {
-		parameters = p.Set.Parameters()
+		parameters = p.set.Parameters()
 	}
-	fmt.Fprintf(w, "\nUsage: %s [options] %s\n", p.Set.Program(), parameters)
+	fmt.Fprintf(w, "\nUsage: %s [options] %s\n", p.set.Program(), parameters)
 }
 
 // SetProgramName sets the program name printed in the usage string.
@@ -255,7 +263,7 @@ type setProgramName struct {
 }
 
 func (c *setProgramName) visit(p *parserWrapper) {
-	p.Set.SetProgram(c.name)
+	p.set.SetProgram(c.name)
 }
 
 // SetPositionalArgumentsPlaceholder allows a user to set the name given to
@@ -272,7 +280,7 @@ type setPositionalArgumentsPlaceholder struct {
 }
 
 func (c *setPositionalArgumentsPlaceholder) visit(p *parserWrapper) {
-	p.Set.SetParameters(c.name)
+	p.set.SetParameters(c.name)
 }
 
 // NoPositionalArguments is a bit of config that causes Parse to
