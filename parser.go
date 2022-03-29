@@ -202,6 +202,21 @@ type parserWrapper struct {
 	required map[string]bool
 }
 
+// maybeAddHelpFlags attempts to register -h/--help. If the user
+// has already configured -h/--help we'll just do nothing.
+func (p *parserWrapper) maybeAddHelpFlags(help *bool) bool {
+	var found bool
+	p.set.VisitAll(func(o getopt.Option) {
+		found = found || o.ShortName() == "h" || o.LongName() == "help"
+	})
+	if found {
+		return false
+	}
+	p.set.FlagLong(help, "help", 'h', "Prints this help message")
+	p.docs["help"] = "Prints this help message"
+	return true
+}
+
 // Args implements Parser.Args.
 func (p *parserWrapper) Args() []string {
 	return p.set.Args()
