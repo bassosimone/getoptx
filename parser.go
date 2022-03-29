@@ -97,6 +97,10 @@ func MustNewParser(flags interface{}, configs ...Config) Parser {
 // This constructor returns either a valid parser and a nil error, on
 // success, or a nil parser and an error, on failure.
 func NewParser(flags interface{}, configs ...Config) (Parser, error) {
+	return newParserWrapper(flags, configs...)
+}
+
+func newParserWrapper(flags interface{}, configs ...Config) (*parserWrapper, error) {
 	parser := getopt.New()
 	// 1. flags must be a pointer to structure. We obtain
 	// the structure type and its value.
