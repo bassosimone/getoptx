@@ -150,6 +150,8 @@ func newParserWrapper(flags interface{}, configs ...Config) (*parserWrapper, err
 		switch fieldValuePtr.Interface().(type) {
 		case *Counter:
 			opt.SetFlag()
+		default:
+			// nothing
 		}
 		// 8. an option could be marked as required.
 		if tag.Get("required") == "true" {
