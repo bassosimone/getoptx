@@ -338,41 +338,39 @@ func (c *setPositionalArgumentsPlaceholder) visit(p *parserWrapper) {
 	}
 }
 
+type minMaxPositionalArguments struct {
+	minArgs int
+	maxArgs int
+}
+
+func (par *minMaxPositionalArguments) visit(p *parserWrapper) {
+	p.minArgs = par.minArgs
+	p.maxArgs = par.maxArgs
+}
+
 // NoPositionalArguments is a bit of config that causes Parse to
 // fail if the user has provided any positional argument.
 func NoPositionalArguments() Config {
-	return &noPositionalArguments{}
-}
-
-type noPositionalArguments struct{}
-
-func (*noPositionalArguments) visit(p *parserWrapper) {
-	p.minArgs = 0
-	p.maxArgs = 0
+	return &minMaxPositionalArguments{
+		minArgs: 0,
+		maxArgs: 0,
+	}
 }
 
 // AtLeastOnePositionalArgument is a bit of config that causes Parse
 // to fail if the user has provided no positional arguments.
 func AtLeastOnePositionalArgument() Config {
-	return &atLeastOnePositionalArgument{}
-}
-
-type atLeastOnePositionalArgument struct{}
-
-func (*atLeastOnePositionalArgument) visit(p *parserWrapper) {
-	p.minArgs = 1
-	p.maxArgs = math.MaxInt
+	return &minMaxPositionalArguments{
+		minArgs: 1,
+		maxArgs: math.MaxInt,
+	}
 }
 
 // JustOnePositionalArgument is a bit of config that causes Parse to fail
 // if the user has not provided exactly one positional argument.
 func JustOnePositionalArgument() Config {
-	return &justOnePositionalArgument{}
-}
-
-type justOnePositionalArgument struct{}
-
-func (*justOnePositionalArgument) visit(p *parserWrapper) {
-	p.minArgs = 1
-	p.maxArgs = 1
+	return &minMaxPositionalArguments{
+		minArgs: 1,
+		maxArgs: 1,
+	}
 }
