@@ -178,8 +178,7 @@ func newParserWrapper(flags interface{}, configs ...Config) (*parserWrapper, err
 	pw := &parserWrapper{
 		set:      parser,
 		docs:     docs,
-		minArgs:  -1,          // allow any number of positional arguments
-		maxArgs:  math.MaxInt, // ditto
+		pac:      newPositionalArgumentsChecker(),
 		required: required,
 	}
 
@@ -198,11 +197,8 @@ type parserWrapper struct {
 	// docs contains the documentation.
 	docs map[string]string
 
-	// minArgs is the minimum acceptable number of positional arguments.
-	minArgs int
-
-	// maxArgs is the maximum acceptable number of positional arguments.
-	maxArgs int
+	// pac is the positional arguments checker.
+	pac *positionalArgumentsChecker
 
 	// required tracks the required options.
 	required map[string]bool
@@ -233,17 +229,49 @@ func (p *parserWrapper) NArgs() int {
 	return p.set.NArgs()
 }
 
+// positionalArgumentsChecker checks whether the number
+// of positional arguments is acceptable.
+type positionalArgumentsChecker struct {
+	// minArgs is the minimum acceptable number of positional arguments.
+	minArgs int
+
+	// maxArgs is the maximum acceptable number of positional arguments.
+	maxArgs int
+}
+
+// newPositionalArgumentsChecker creates a new checker for positional arguments.
+func newPositionalArgumentsChecker() *positionalArgumentsChecker {
+	return &positionalArgumentsChecker{
+		minArgs: -1,          // allow any number of positional arguments
+		maxArgs: math.MaxInt, // ditto
+	}
+}
+
+var (
+	// ErrTooManyPositionalArguments indicates that you passed too many
+	// positional arguments to the current parser.
+	ErrTooManyPositionalArguments = errors.New("too many positional arguments")
+
+	// ErrTooFewPositionalArguments indicates that you passed too few
+	// positional arguments to the current parser.
+	ErrTooFewPositionalArguments = errors.New("too few positional arguments")
+)
+
 // Getopt implements Parser.Getopt.
 func (p *parserWrapper) Getopt(args []string) error {
 	if err := p.set.Getopt(args, nil); err != nil {
 		return err
 	}
-	count := len(p.set.Args())
-	if count < p.minArgs {
-		return errors.New("too few positional arguments")
+	return p.pac.check(p)
+}
+
+func (pac *positionalArgumentsChecker) check(p Parser) error {
+	count := p.NArgs()
+	if count < pac.minArgs {
+		return ErrTooFewPositionalArguments
 	}
-	if count > p.maxArgs {
-		return errors.New("too many positional arguments")
+	if count > pac.maxArgs {
+		return ErrTooManyPositionalArguments
 	}
 	return nil
 }
@@ -292,7 +320,7 @@ func (p *parserWrapper) printOptions(w io.Writer) {
 
 func (p *parserWrapper) printBriefUsage(w io.Writer) {
 	var parameters string
-	if p.maxArgs >= 1 {
+	if p.pac.maxArgs >= 1 {
 		parameters = p.set.Parameters()
 	}
 	fmt.Fprintf(w, "\nUsage: %s [options] %s\n", p.set.Program(), parameters)
@@ -344,8 +372,8 @@ type minMaxPositionalArguments struct {
 }
 
 func (par *minMaxPositionalArguments) visit(p *parserWrapper) {
-	p.minArgs = par.minArgs
-	p.maxArgs = par.maxArgs
+	p.pac.minArgs = par.minArgs
+	p.pac.maxArgs = par.maxArgs
 }
 
 // NoPositionalArguments is a bit of config that causes Parse to
