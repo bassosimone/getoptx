@@ -102,6 +102,7 @@ func NewParser(flags interface{}, configs ...Config) (Parser, error) {
 
 func newParserWrapper(flags interface{}, configs ...Config) (*parserWrapper, error) {
 	parser := getopt.New()
+
 	// 1. flags must be a pointer to structure. We obtain
 	// the structure type and its value.
 	value := reflect.ValueOf(flags)
@@ -113,10 +114,12 @@ func newParserWrapper(flags interface{}, configs ...Config) (*parserWrapper, err
 		return nil, errors.New("expected a pointer to struct")
 	}
 	pointeeType := pointee.Type()
+
 	// 2. we process each field inside the struct.
 	docs := make(map[string]string)
 	required := make(map[string]bool)
 	for idx := 0; idx < pointeeType.NumField(); idx++ {
+
 		// 3. obtain the field value, a pointer to the value, the
 		// field type, and the associated tags.
 		fieldValue := pointee.Field(idx)
@@ -126,11 +129,13 @@ func newParserWrapper(flags interface{}, configs ...Config) (*parserWrapper, err
 		fieldValuePtr := fieldValue.Addr()
 		fieldType := pointeeType.Field(idx)
 		tag := fieldType.Tag
+
 		// 4. every field must contain documentation.
 		docstring := tag.Get("doc")
 		if docstring == "" {
 			return nil, errors.New("there is a field without documentation")
 		}
+
 		// 5. a field may have a short associated option.
 		short := rune(0)
 		if shortName := tag.Get("short"); shortName != "" {
@@ -139,9 +144,11 @@ func newParserWrapper(flags interface{}, configs ...Config) (*parserWrapper, err
 			}
 			short, _ = utf8.DecodeRune([]byte(shortName))
 		}
+
 		// 6. the long option name is the kebab-case of the field name.
 		name := strcase.ToKebab(fieldType.Name)
 		docs[name] = docstring
+
 		// 7. add this option to pborman's parser.
 		if !fieldValuePtr.CanInterface() {
 			return nil, errors.New("a field inside the structure is private")
@@ -153,12 +160,14 @@ func newParserWrapper(flags interface{}, configs ...Config) (*parserWrapper, err
 		default:
 			// nothing
 		}
+
 		// 8. an option could be marked as required.
 		if tag.Get("required") == "true" {
 			required[name] = true
 			opt.Mandatory()
 		}
 	}
+
 	// 9. wrap pborman's parser.
 	pw := &parserWrapper{
 		set:      parser,
@@ -167,6 +176,7 @@ func newParserWrapper(flags interface{}, configs ...Config) (*parserWrapper, err
 		maxArgs:  math.MaxInt, // ditto
 		required: required,
 	}
+
 	// 10. apply config bits
 	for _, config := range configs {
 		config.visit(pw)
