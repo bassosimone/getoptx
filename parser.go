@@ -192,14 +192,17 @@ type parserWrapper struct {
 	required map[string]bool
 }
 
+// Args implements Parser.Args.
 func (p *parserWrapper) Args() []string {
 	return p.set.Args()
 }
 
+// NArgs implements Parser.NArgs.
 func (p *parserWrapper) NArgs() int {
 	return p.set.NArgs()
 }
 
+// Getopt implements Parser.Getopt.
 func (p *parserWrapper) Getopt(args []string) error {
 	if err := p.set.Getopt(args, nil); err != nil {
 		return err
@@ -214,6 +217,7 @@ func (p *parserWrapper) Getopt(args []string) error {
 	return nil
 }
 
+// MustGetopt implements Parser.MustGetopt.
 func (p *parserWrapper) MustGetopt(args []string) {
 	if err := p.Getopt(args); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err.Error())
@@ -222,6 +226,7 @@ func (p *parserWrapper) MustGetopt(args []string) {
 	}
 }
 
+// PrintUsage implements Parser.PrintUsage.
 func (p *parserWrapper) PrintUsage(w io.Writer) {
 	p.printBriefUsage(w)
 	fmt.Fprintf(w, "\nOptions:\n")
