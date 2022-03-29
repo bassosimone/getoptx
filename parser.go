@@ -204,6 +204,11 @@ type parserWrapper struct {
 	required map[string]bool
 }
 
+// numOptions counts the number of registered options.
+func (p *parserWrapper) numOptions() int {
+	return len(p.docs)
+}
+
 // maybeAddHelpFlags attempts to register -h/--help. If the user
 // has already configured -h/--help we'll just do nothing.
 func (p *parserWrapper) maybeAddHelpFlags(help *bool) bool {
