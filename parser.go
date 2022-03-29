@@ -256,6 +256,9 @@ func (p *parserWrapper) printBriefUsage(w io.Writer) {
 }
 
 // SetProgramName sets the program name printed in the usage string.
+//
+// If the provided name is empty, this option does not modify the
+// program name that would be printed by default.
 func SetProgramName(name string) Config {
 	return &setProgramName{name: name}
 }
@@ -265,7 +268,9 @@ type setProgramName struct {
 }
 
 func (c *setProgramName) visit(p *parserWrapper) {
-	p.set.SetProgram(c.name)
+	if c.name != "" {
+		p.set.SetProgram(c.name)
+	}
 }
 
 // SetPositionalArgumentsPlaceholder allows a user to set the name given to
@@ -273,6 +278,9 @@ func (c *setProgramName) visit(p *parserWrapper) {
 //
 // Note that this value will not be printed if the parser does not accept
 // at least a single positional argument.
+//
+// If the provided name is empty, we will not modify the name that would
+// printed by default for representing positional arguments.
 func SetPositionalArgumentsPlaceholder(name string) Config {
 	return &setPositionalArgumentsPlaceholder{name: name}
 }
@@ -282,7 +290,9 @@ type setPositionalArgumentsPlaceholder struct {
 }
 
 func (c *setPositionalArgumentsPlaceholder) visit(p *parserWrapper) {
-	p.set.SetParameters(c.name)
+	if c.name != "" {
+		p.set.SetParameters(c.name)
+	}
 }
 
 // NoPositionalArguments is a bit of config that causes Parse to
