@@ -56,7 +56,9 @@ func MustNewParser(flags interface{}, configs ...Config) Parser {
 //
 // The `flags`` opaque argument must be a pointer to a struct where each
 // field must be tagged with `doc:"..."`. We will use the value of the doc
-// tag to generate the help message produced by PrintUsage.
+// tag to generate the help message produced by PrintUsage. We will
+// return an error if we find a field that is not documented. You should
+// use `doc:"-"` to force the parser to skip a field.
 //
 // The name of the structure field is converted to kebab case and
 // used to generate the command line option.
@@ -130,8 +132,12 @@ func newParserWrapper(flags interface{}, configs ...Config) (*parserWrapper, err
 		fieldType := pointeeType.Field(idx)
 		tag := fieldType.Tag
 
-		// 4. every field must contain documentation.
+		// 4. every field must contain documentation. However, we skip
+		// fields named "-" like encoding/json also does.
 		docstring := tag.Get("doc")
+		if docstring == "-" {
+			continue
+		}
 		if docstring == "" {
 			return nil, errors.New("there is a field without documentation")
 		}
