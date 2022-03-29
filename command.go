@@ -112,7 +112,7 @@ type subcommandHelp struct{}
 //       getoptx.LeafCommand(
 //         "rm", "Remove network measurements", &options.RmOptions,
 //       ),
-//	   )
+//     )
 //
 //     selected := cli.MustGetopt(os.Args)
 //     switch selected.Options().(type) { // <- (2)
